@@ -19,7 +19,11 @@ pytest = "^7.4.2"
 requests = "^2.31.0"
 dagster-duckdb = "^0.20.12"
 dagster-duckdb-pandas = "^0.20.12"
+faker = "^19.6.1"
 
+
+[tool.poetry.group.dev.dependencies]
+ipykernel = "^6.25.2"
 
 [build-system]
 requires = ["poetry-core"]

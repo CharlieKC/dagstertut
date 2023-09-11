@@ -1,4 +1,6 @@
 data/*
+tmp*
+nbs/*
 
 
 # Byte-compiled / optimized / DLL files

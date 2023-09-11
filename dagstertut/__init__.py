@@ -11,6 +11,7 @@ from dagster import (
 )
 
 from . import assets
+from .resources import DataGeneratorResource
 
 all_assets = load_assets_from_modules([assets])
 
@@ -31,6 +32,8 @@ database_io_manager = DuckDBPandasIOManager(database="analytics.hackernews")
 
 duckdb = DuckDBPandasIOManager(database="data/database.duckdb")
 
+datagen = DataGeneratorResource()
+
 defs = Definitions(
     assets=all_assets,
     schedules=[hackernews_schedule],
@@ -38,5 +41,6 @@ defs = Definitions(
         "io_manager": io_manager,
         "database_io_manager": database_io_manager,
         "duckdb": duckdb,
+        "hackernews_api": datagen
     },
 )
