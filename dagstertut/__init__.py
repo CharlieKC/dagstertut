@@ -11,9 +11,10 @@ from dagster import (
 )
 
 from . import assets
+from . import filewatching
 from .resources import DataGeneratorResource
 
-all_assets = load_assets_from_modules([assets])
+all_assets = load_assets_from_modules([assets, filewatching])
 
 # Addition: define a job that will materialize the assets
 hackernews_job = define_asset_job("hackernews_job", selection=AssetSelection.all())
@@ -28,11 +29,11 @@ io_manager = FilesystemIOManager(
     base_dir="data",  # Path is built relative to where `dagster dev` is run
 )
 
-database_io_manager = DuckDBPandasIOManager(database="analytics.hackernews")
+database_io_manager = DuckDBPandasIOManager(database="data/analytics.hackernews")
 
 duckdb = DuckDBPandasIOManager(database="data/database.duckdb")
 
-datagen = DataGeneratorResource()
+datagen = DataGeneratorResource(num_days=365)
 
 defs = Definitions(
     assets=all_assets,

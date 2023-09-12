@@ -1,6 +1,7 @@
 data/*
 tmp*
 nbs/*
+analytics.hackernews
 
 
 # Byte-compiled / optimized / DLL files

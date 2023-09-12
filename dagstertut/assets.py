@@ -9,7 +9,9 @@ from matplotlib import pyplot as plt
 
 import pandas as pd
 import requests
-from dagster import AssetExecutionContext, MetadataValue, asset, get_dagster_logger
+from dagster import AssetExecutionContext, MetadataValue, asset, get_dagster_logger, Config
+
+from dagstertut.resources import DataGeneratorResource
 
 DATA_DIR = Path(__file__).parent.parent / "data"
 TOPSTORY_ID_FILE = DATA_DIR / "topstory_ids.json"
@@ -117,3 +119,21 @@ def most_frequent_words(context: AssetExecutionContext,
     context.add_output_metadata(metadata={"plot": MetadataValue.md(md_content)})
     
     return top_words
+
+
+@asset
+def signups(
+    context: AssetExecutionContext, hackernews_api: DataGeneratorResource
+) -> pd.DataFrame:
+    signups = pd.DataFrame(hackernews_api.get_signups())
+
+    context.add_output_metadata(
+        metadata={
+            "Record Count": len(signups),
+            "Preview": MetadataValue.md(signups.head().to_markdown()),
+            "Earliest Signup": signups["registered_at"].min(),
+            "Latest Signup": signups["registered_at"].max(),
+        }
+    )
+
+    return signups
