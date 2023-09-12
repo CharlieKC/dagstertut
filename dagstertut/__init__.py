@@ -12,6 +12,7 @@ from dagster import (
 
 from . import assets
 from . import filewatching
+from . import graphstuff
 from .resources import DataGeneratorResource
 
 all_assets = load_assets_from_modules([assets, filewatching])
@@ -41,7 +42,7 @@ datagen = DataGeneratorResource(num_days=365)
 defs = Definitions(
     assets=all_assets,
     schedules=[hackernews_schedule],
-    jobs=[filewatching.asset_job],
+    jobs=[filewatching.asset_job, graphstuff.graphjob],
     sensors=[filewatching.my_directory_sensor],
     resources={
         "io_manager": io_manager,

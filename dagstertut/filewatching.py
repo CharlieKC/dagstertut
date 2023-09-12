@@ -35,6 +35,7 @@ def ret2(context, ret1):
 @op
 def fileinfo_op(context, ret1):
     context.log.info(f"Op received file {ret1}")
+    return "WOOO: " + ret1
 
 
 
