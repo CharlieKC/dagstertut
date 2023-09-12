@@ -5,45 +5,51 @@ from dagster import AssetSelection, Config, RunConfig, RunRequest, job, op, sens
 
 FILEWATCHING_DIR = Path(__file__).parent.parent / "watchdir"
 INPUT_DIR = FILEWATCHING_DIR / "input"
+INPUT2_DIR = FILEWATCHING_DIR / "input_2"
 OUTPUT_DIR = FILEWATCHING_DIR / "output"
 
 assert INPUT_DIR.is_dir(), f"input dir not found {INPUT_DIR}"
 assert OUTPUT_DIR.is_dir(), f"output dir not found {OUTPUT_DIR}"
 
 class FileConfig(Config):
-    filename: str
+    filepath: str
 
-
-@op
-def process_file(context, config: FileConfig):
-    context.log.info(config.filename)
-
-
-@job
-def log_file_job():
-    process_file()
-
-@asset
-def ret1():
-    return 1
 
 
 @asset
-def ret2(ret1):
+def ret1(context, config: FileConfig):
+    context.log.info(f"File name {config.filepath}")
+    
+    return config.filepath
+
+
+@asset
+def ret2(context, ret1):
+    context.log.info(f"Found the filename in the second asset {ret1}")
+    file_txt = OUTPUT_DIR / "files.txt"
+    with open(file_txt, 'a') as f:
+        f.write(str(ret1) + '\n')
+
     return 2
 
-asset_job = define_asset_job(name="asset_job", selection=AssetSelection.keys("ret1", "ret2"))
+@op
+def fileinfo_op(context, ret1):
+    context.log.info(f"Op received file {ret1}")
+
+
+
+
+asset_job = define_asset_job(name="filewatching_job", selection=AssetSelection.keys("ret1", "ret2"))
 
 
 @sensor(job=asset_job, default_status=DefaultSensorStatus.RUNNING)
 def my_directory_sensor():
-    for filename in os.listdir(INPUT_DIR):
-        filepath = os.path.join(INPUT_DIR, filename)
-        if os.path.isfile(filepath):
-            yield RunRequest(
-                run_key=filename,
-                # run_config=RunConfig(
-                    # ops={"process_file": FileConfig(filename=filename)}
-                # ),
-            )
+    filepaths = sorted(list(INPUT_DIR.resolve().glob('*')))
+    for filepath in filepaths:
+        yield RunRequest(
+            run_key=str(filepath),
+            run_config=RunConfig(
+                ops={"ret1": FileConfig(filepath=str(filepath))}
+            ),
+        )
 
